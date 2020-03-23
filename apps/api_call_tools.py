@@ -10,9 +10,9 @@ from apps.json_tools import *
 def cited_cases(url, url_data):
     """citedCases call
 
-    Returns a formatted list of case name strings. Future versions to include
-    case URLs and cases that are not hosted on CanLII
-    """
+    Returns formatted lists of case name strings. Uses the API to collect cases
+    that are reported on CanLII, and a basic scraper to collect the ones that
+    are not"""
 
     database_id = url_data['database_id']
     case_id = url_data['case_id']
@@ -24,6 +24,8 @@ def cited_cases(url, url_data):
     # Hosted cases
     hosted_cases = []
     canlii_url_list = []
+
+    # generate_json() is being depreciated: replace with requests.json()
     case_dictionary = generate_json(api_url)['citedCases']
     for case in case_dictionary:
 
@@ -51,15 +53,21 @@ def cited_cases_unhosted(url):
 
         if "(not available on CanLII)" in result.text:
             unhosted_cases.append(
-                result.text.strip().replace(
-                    '.', ''
-                ).replace(
-                    '(not available on CanLII)', ''
-                )
+                result.text.strip().replace('.', '')
+                .replace('(not available on CanLII)', '')
             )
 
     return unhosted_cases
 
-def metadata_call_case():
-    
-    return valueofsomesort
+def metadata_call_case(url_data):
+    """Metadata API call"""
+
+    language = url_data['language']
+    database_id = url_data['database_id']
+    case_id = url_data['case_id']
+    key = generate_key()
+    api_url = ('https://api.canlii.org/v1/caseBrowse/'
+               f'{language}/{database_id}/{case_id}/?api_key={key}')
+
+    # generate_json() is being depreciated: replace with requests.json()
+    return generate_json(api_url)
